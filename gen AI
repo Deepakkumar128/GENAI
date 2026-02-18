@@ -1,0 +1,93 @@
+# ================================
+# INSTALL LIBRARIES
+# ================================
+
+!pip install gTTS gradio
+
+# ================================
+# IMPORT LIBRARIES
+# ================================
+
+import gradio as gr
+from gtts import gTTS, lang
+import os
+
+# ================================
+# GET LANGUAGE LIST
+# ================================
+
+languages_dict = lang.tts_langs()
+
+# Convert dictionary to dropdown format
+language_options = [(name, code) for code, name in languages_dict.items()]
+
+# Accent domain options
+accent_options = [
+    ("Default (US)", "com"),
+    ("India", "co.in"),
+    ("United Kingdom", "co.uk"),
+    ("Australia", "com.au"),
+    ("Canada", "ca")
+]
+
+# ================================
+# TEXT TO SPEECH FUNCTION
+# ================================
+
+def text_to_speech(text, language, accent):
+
+    if not text.strip():
+        return None
+
+    file_name = "speech_output.mp3"
+
+    tts = gTTS(text=text, lang=language, tld=accent)
+    tts.save(file_name)
+
+    return file_name
+
+# ================================
+# GRADIO UI
+# ================================
+
+with gr.Blocks() as demo:
+
+    gr.Markdown("# 🎙 Text To Speech Converter")
+    gr.Markdown("Convert any text into speech in multiple languages 🌍")
+
+    text_input = gr.Textbox(
+        label="Enter Your Text",
+        placeholder="Type something here...",
+        lines=5
+    )
+
+    language_dropdown = gr.Dropdown(
+        choices=language_options,
+        label="Select Language",
+        value="en"
+    )
+
+    accent_dropdown = gr.Dropdown(
+        choices=accent_options,
+        label="Select Accent (Optional)",
+        value="com"
+    )
+
+    generate_btn = gr.Button("🔊 Generate Speech")
+
+    audio_output = gr.Audio(
+        label="Generated Audio",
+        type="filepath"
+    )
+
+    generate_btn.click(
+        text_to_speech,
+        inputs=[text_input, language_dropdown, accent_dropdown],
+        outputs=audio_output
+    )
+
+# ================================
+# LAUNCH APP
+# ================================
+
+demo.launch()
